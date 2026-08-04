@@ -128,21 +128,25 @@ export function MatchesTable({ items }: { items: VesselMatchItem[] }) {
           No items match these filters.
         </p>
       ) : (
-        [...grouped.entries()].map(([categoryName, categoryItems]) => (
-          <div key={categoryName} className="flex flex-col gap-2">
-            <h3 className="text-sm font-medium text-muted-foreground">{categoryName}</h3>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-8" />
-                  <TableHead>Maker</TableHead>
-                  <TableHead>Model / Type</TableHead>
-                  <TableHead>Best match</TableHead>
-                  <TableHead className="text-right">Candidates</TableHead>
-                  <TableHead>Status</TableHead>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-8" />
+              <TableHead>Maker</TableHead>
+              <TableHead>Model / Type</TableHead>
+              <TableHead>Best match</TableHead>
+              <TableHead className="text-right">Candidates</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...grouped.entries()].map(([categoryName, categoryItems]) => (
+              <Fragment key={categoryName}>
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={6} className="bg-muted/50 py-1.5 text-xs font-medium text-muted-foreground">
+                    {categoryName}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
                 {categoryItems.map((item) => {
                   const isOpen = expanded.has(item.id);
                   const tierStyle = item.bestTier ? TIER_STYLE[item.bestTier] : null;
@@ -188,10 +192,10 @@ export function MatchesTable({ items }: { items: VesselMatchItem[] }) {
                     </Fragment>
                   );
                 })}
-              </TableBody>
-            </Table>
-          </div>
-        ))
+              </Fragment>
+            ))}
+          </TableBody>
+        </Table>
       )}
     </div>
   );

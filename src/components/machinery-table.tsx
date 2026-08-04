@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { Fragment, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2, TriangleAlert } from "lucide-react";
@@ -80,64 +80,70 @@ export function MachineryTable({
         </p>
       )}
 
-      {[...grouped.entries()].map(([categoryName, items]) => (
-        <div key={categoryName} className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium text-muted-foreground">{categoryName}</h3>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Maker</TableHead>
-                <TableHead>Model / Type</TableHead>
-                <TableHead>Serial</TableHead>
-                <TableHead>Key specs</TableHead>
-                <TableHead className="w-10" />
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">{item.maker ?? "—"}</TableCell>
-                  <TableCell>{item.modelType ?? "—"}</TableCell>
-                  <TableCell className="text-muted-foreground">{item.serialNo ?? "—"}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    <div className="flex flex-wrap items-center gap-1">
-                      {item.needsReview && (
-                        <Badge variant="destructive" className="gap-1">
-                          <TriangleAlert className="h-3 w-3" /> Needs review
-                        </Badge>
-                      )}
-                      {specSummary(item.specs)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <MachineryItemFormDialog
-                      vesselId={vesselId}
-                      categories={categories}
-                      item={item}
-                      trigger={
-                        <Button variant="ghost" size="icon">
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      }
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={isPending}
-                      onClick={() => onDelete(item.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+      {rows.length > 0 && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Maker</TableHead>
+              <TableHead>Model / Type</TableHead>
+              <TableHead>Serial</TableHead>
+              <TableHead>Key specs</TableHead>
+              <TableHead className="w-10" />
+              <TableHead className="w-10" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...grouped.entries()].map(([categoryName, items]) => (
+              <Fragment key={categoryName}>
+                <TableRow className="hover:bg-transparent">
+                  <TableCell colSpan={6} className="bg-muted/50 py-1.5 text-xs font-medium text-muted-foreground">
+                    {categoryName}
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ))}
+                {items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.maker ?? "—"}</TableCell>
+                    <TableCell>{item.modelType ?? "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">{item.serialNo ?? "—"}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-1">
+                        {item.needsReview && (
+                          <Badge variant="destructive" className="gap-1">
+                            <TriangleAlert className="h-3 w-3" /> Needs review
+                          </Badge>
+                        )}
+                        {specSummary(item.specs)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <MachineryItemFormDialog
+                        vesselId={vesselId}
+                        categories={categories}
+                        item={item}
+                        trigger={
+                          <Button variant="ghost" size="icon">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={isPending}
+                        onClick={() => onDelete(item.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </Fragment>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </div>
   );
 }
