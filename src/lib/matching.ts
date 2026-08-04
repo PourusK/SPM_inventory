@@ -1,4 +1,5 @@
 import { sql, eq, inArray } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { machineryCategories, machineryItems, matches, vessels } from "@/lib/db/schema";
 import type { CategoryFieldDef } from "@/lib/db/schema";
@@ -173,4 +174,37 @@ export async function runMatchingForVessel(recycledVesselId: number): Promise<nu
   }
 
   return created;
+}
+
+/**
+ * Re-runs matching after machinery changes on ANY vessel — not just the recycled
+ * side. Matching only ever compares recycled-vs-owned, so:
+ * - editing a recycled vessel's items only affects that vessel's own matches.
+ * - editing an owned (main_fleet/offshore) vessel's items can affect matches for
+ *   every recycled vessel already in the system, since a newly-added fleet spare
+ *   might now match something imported earlier. Without this, matches silently
+ *   go stale the moment inventory is entered after the recycled-vessel import —
+ *   which is exactly the bug this fixes.
+ */
+export async function rematchAfterVesselChange(vesselId: number): Promise<void> {
+  const [vessel] = await db.select().from(vessels).where(eq(vessels.id, vesselId));
+  if (!vessel) return;
+
+  if (vessel.sourceType === "recycled") {
+    await runMatchingForVessel(vessel.id);
+    revalidatePath(`/recycled/${vessel.id}/matches`);
+    revalidatePath("/matches");
+    return;
+  }
+
+  const recycledVessels = await db
+    .select({ id: vessels.id })
+    .from(vessels)
+    .where(eq(vessels.sourceType, "recycled"));
+
+  for (const recycled of recycledVessels) {
+    await runMatchingForVessel(recycled.id);
+    revalidatePath(`/recycled/${recycled.id}/matches`);
+  }
+  revalidatePath("/matches");
 }

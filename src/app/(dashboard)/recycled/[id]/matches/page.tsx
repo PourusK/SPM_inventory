@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getVessel } from "@/actions/vessels";
 import { listMatchesForRecycledVessel } from "@/actions/matches";
 import { MatchCard } from "@/components/match-card";
+import { RecomputeMatchesButton } from "@/components/recompute-matches-button";
 
 export default async function RecycledVesselMatchesPage({
   params,
@@ -19,12 +20,15 @@ export default async function RecycledVesselMatchesPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Matches for {vessel.name}</h1>
-        <p className="text-sm text-muted-foreground">
-          IMO {vessel.imoNo} · {matches.length} potential spares match
-          {matches.length === 1 ? "" : "es"} against Main Fleet / Offshore inventory
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Matches for {vessel.name}</h1>
+          <p className="text-sm text-muted-foreground">
+            IMO {vessel.imoNo} · {matches.length} potential spares match
+            {matches.length === 1 ? "" : "es"} against Main Fleet / Offshore inventory
+          </p>
+        </div>
+        <RecomputeMatchesButton vesselId={vessel.id} />
       </div>
 
       {matches.length === 0 ? (

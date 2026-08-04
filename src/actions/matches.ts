@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { machineryCategories, machineryItems, matches, vessels } from "@/lib/db/schema";
 import { requireSession } from "@/lib/auth";
+import { runMatchingForVessel } from "@/lib/matching";
 
 const recycledItems = alias(machineryItems, "recycled_items");
 const ownedItems = alias(machineryItems, "owned_items");
@@ -62,6 +63,14 @@ export async function listAllPendingMatches() {
     .where(eq(matches.status, "pending"))
     .orderBy(matches.tier, desc(matches.confidenceScore))
     .limit(200);
+}
+
+export async function recomputeMatches(recycledVesselId: number) {
+  await requireSession();
+  const count = await runMatchingForVessel(recycledVesselId);
+  revalidatePath(`/recycled/${recycledVesselId}/matches`);
+  revalidatePath("/matches");
+  return count;
 }
 
 export async function setMatchStatus(matchId: number, status: "confirmed" | "rejected") {

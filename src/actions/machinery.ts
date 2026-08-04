@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { machineryCategories, machineryItems, vessels } from "@/lib/db/schema";
 import { requireSession } from "@/lib/auth";
 import { machineryItemInputSchema, type MachineryItemInput } from "@/lib/validation";
+import { rematchAfterVesselChange } from "@/lib/matching";
 
 export async function listCategories() {
   await requireSession();
@@ -64,6 +65,7 @@ export async function createMachineryItem(vesselId: number, input: MachineryItem
     })
     .returning();
 
+  await rematchAfterVesselChange(vesselId);
   await revalidateVessel(vesselId);
   return created;
 }
@@ -88,7 +90,10 @@ export async function updateMachineryItem(id: number, input: MachineryItemInput)
     .where(eq(machineryItems.id, id))
     .returning();
 
-  if (updated) await revalidateVessel(updated.vesselId);
+  if (updated) {
+    await rematchAfterVesselChange(updated.vesselId);
+    await revalidateVessel(updated.vesselId);
+  }
   return updated;
 }
 

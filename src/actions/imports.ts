@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 import { machineryCategories, machineryItems, uploads, vessels } from "@/lib/db/schema";
 import { requireSession } from "@/lib/auth";
 import { extractMachinery, type ExtractedItem } from "@/lib/extraction";
-import { runMatchingForVessel } from "@/lib/matching";
+import { rematchAfterVesselChange, runMatchingForVessel } from "@/lib/matching";
 import { CATEGORY_SLUGS } from "@/lib/taxonomy";
 
 export async function runImport(vesselId: number, formData: FormData) {
@@ -102,9 +102,16 @@ export async function confirmImport(
 
   const [vessel] = await db.select().from(vessels).where(eq(vessels.id, vesselId));
 
+  // Recycled imports get an immediate match count for the UI; owned-side imports
+  // (main_fleet/offshore) instead recompute matches for every existing recycled
+  // vessel, since new fleet/offshore spares can retroactively match them.
   let matchCount = 0;
   if (vessel?.sourceType === "recycled") {
     matchCount = await runMatchingForVessel(vesselId);
+    revalidatePath(`/recycled/${vesselId}/matches`);
+    revalidatePath("/matches");
+  } else if (vessel) {
+    await rematchAfterVesselChange(vesselId);
   }
 
   revalidatePath(`/vessels/${vesselId}`);
