@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getVessel } from "@/actions/vessels";
-import { listMatchesForRecycledVessel } from "@/actions/matches";
-import { MatchCard } from "@/components/match-card";
+import { listItemMatchesForVessel } from "@/actions/matches";
+import { MatchesTable } from "@/components/matches-table";
 import { RecomputeMatchesButton } from "@/components/recompute-matches-button";
 
 export default async function RecycledVesselMatchesPage({
@@ -16,7 +16,8 @@ export default async function RecycledVesselMatchesPage({
   const vessel = await getVessel(vesselId);
   if (!vessel || vessel.sourceType !== "recycled") notFound();
 
-  const matches = await listMatchesForRecycledVessel(vesselId);
+  const items = await listItemMatchesForVessel(vesselId);
+  const matchedCount = items.filter((i) => i.candidates.length > 0).length;
 
   return (
     <div className="flex flex-col gap-4">
@@ -24,24 +25,19 @@ export default async function RecycledVesselMatchesPage({
         <div>
           <h1 className="text-2xl font-semibold">Matches for {vessel.name}</h1>
           <p className="text-sm text-muted-foreground">
-            IMO {vessel.imoNo} · {matches.length} potential spares match
-            {matches.length === 1 ? "" : "es"} against Main Fleet / Offshore inventory
+            IMO {vessel.imoNo} · {matchedCount} of {items.length} items have a potential match
+            against Main Fleet / Offshore inventory
           </p>
         </div>
         <RecomputeMatchesButton vesselId={vessel.id} />
       </div>
 
-      {matches.length === 0 ? (
+      {items.length === 0 ? (
         <p className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-          No matches yet. Import this vessel&apos;s machinery list first, or none of its items
-          resembled anything in your Main Fleet / Offshore inventory.
+          No machinery recorded for this vessel yet. Import its spec sheet first.
         </p>
       ) : (
-        <div className="flex flex-col gap-4">
-          {matches.map((match) => (
-            <MatchCard key={match.id} match={match} />
-          ))}
-        </div>
+        <MatchesTable items={items} />
       )}
     </div>
   );

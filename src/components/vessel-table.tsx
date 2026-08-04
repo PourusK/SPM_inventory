@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { deleteVessel } from "@/actions/vessels";
 
 type Row = {
@@ -26,7 +27,19 @@ type Row = {
   itemCount: number;
 };
 
-export function VesselTable({ rows }: { rows: Row[] }) {
+type MatchSummary = {
+  matchedItems: number;
+  totalItems: number;
+  tier1Count: number;
+};
+
+export function VesselTable({
+  rows,
+  matchSummaries,
+}: {
+  rows: Row[];
+  matchSummaries?: Map<number, MatchSummary>;
+}) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -63,11 +76,14 @@ export function VesselTable({ rows }: { rows: Row[] }) {
           <TableHead>Built</TableHead>
           <TableHead>Country</TableHead>
           <TableHead className="text-right">Machinery items</TableHead>
+          {matchSummaries && <TableHead>Matches</TableHead>}
           <TableHead className="w-10" />
         </TableRow>
       </TableHeader>
       <TableBody>
-        {rows.map((row) => (
+        {rows.map((row) => {
+          const summary = matchSummaries?.get(row.id);
+          return (
           <TableRow key={row.id}>
             <TableCell className="font-medium">
               <Link href={`/vessels/${row.id}`} className="hover:underline">
@@ -79,6 +95,24 @@ export function VesselTable({ rows }: { rows: Row[] }) {
             <TableCell>{row.builtYear ?? "—"}</TableCell>
             <TableCell>{row.country ?? "—"}</TableCell>
             <TableCell className="text-right">{row.itemCount}</TableCell>
+            {matchSummaries && (
+              <TableCell>
+                {summary ? (
+                  <Link href={`/recycled/${row.id}/matches`} className="flex items-center gap-1.5 hover:underline">
+                    <span className="text-sm">
+                      {summary.matchedItems}/{summary.totalItems}
+                    </span>
+                    {summary.tier1Count > 0 && (
+                      <Badge className="bg-green-600 text-white hover:bg-green-600">
+                        {summary.tier1Count} T1
+                      </Badge>
+                    )}
+                  </Link>
+                ) : (
+                  <span className="text-sm text-muted-foreground">—</span>
+                )}
+              </TableCell>
+            )}
             <TableCell>
               <Button
                 variant="ghost"
@@ -90,7 +124,8 @@ export function VesselTable({ rows }: { rows: Row[] }) {
               </Button>
             </TableCell>
           </TableRow>
-        ))}
+          );
+        })}
       </TableBody>
     </Table>
   );

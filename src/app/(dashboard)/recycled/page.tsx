@@ -1,11 +1,16 @@
 import { Plus } from "lucide-react";
 import { listVessels } from "@/actions/vessels";
+import { listRecycledVesselMatchSummaries } from "@/actions/matches";
 import { VesselTable } from "@/components/vessel-table";
 import { VesselFormDialog } from "@/components/vessel-form-dialog";
 import { Button } from "@/components/ui/button";
 
 export default async function RecycledPage() {
-  const vessels = await listVessels("recycled");
+  const [vessels, matchSummaries] = await Promise.all([
+    listVessels("recycled"),
+    listRecycledVesselMatchSummaries(),
+  ]);
+  const matchSummaryMap = new Map(matchSummaries.map((s) => [s.vesselId, s]));
 
   return (
     <div className="flex flex-col gap-4">
@@ -26,7 +31,7 @@ export default async function RecycledPage() {
           }
         />
       </div>
-      <VesselTable rows={vessels} />
+      <VesselTable rows={vessels} matchSummaries={matchSummaryMap} />
     </div>
   );
 }
