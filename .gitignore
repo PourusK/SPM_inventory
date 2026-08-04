@@ -32,9 +32,13 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
+
+# graphify (regenerable local analysis output — run `graphify update .` to rebuild)
+/graphify-out/
 
 # typescript
 *.tsbuildinfo
