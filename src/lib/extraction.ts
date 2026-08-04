@@ -40,10 +40,12 @@ ${TAXONOMY_DESCRIPTION}
 - modelType: the model/type designation as printed.
 - serialNo: serial number if present, else null. This is for traceability only.
 - specs: an object keyed ONLY by the critical/reference spec keys listed for that item's category above. Parse numeric values as numbers (strip units). Omit keys you have no value for rather than guessing.
-- rawText: the original raw line(s) this item was extracted from, verbatim, for audit purposes.
+- rawText: a SHORT excerpt (under 120 characters) of the source line for audit purposes — not the full line, just enough to relocate it in the document. Keep this brief; do not reproduce long verbatim blocks.
 - needsReview: true if the source text was ambiguous, illegible, marked unclean/dirty/unreadable, or you had to guess the category or a critical value. Otherwise false.
 
-Do not invent values. Do not merge distinct physical units into one item (e.g. "02 units" of the same pump listed with two serials should usually be represented once with a note in rawText, unless specs genuinely differ per unit).`;
+Do not invent values. Do not merge distinct physical units into one item (e.g. "02 units" of the same pump listed with two serials should usually be represented once with a note in rawText, unless specs genuinely differ per unit).
+
+Be concise everywhere else too: this tool call's total output length directly affects processing time, and documents can have 50+ items. Prefer short field values over descriptive prose.`;
 
 function toolDefinition(): Anthropic.Tool {
   return {
@@ -62,7 +64,7 @@ function toolDefinition(): Anthropic.Tool {
               modelType: { type: ["string", "null"] },
               serialNo: { type: ["string", "null"] },
               specs: { type: "object" },
-              rawText: { type: ["string", "null"] },
+              rawText: { type: ["string", "null"], maxLength: 120 },
               needsReview: { type: "boolean" },
             },
             required: ["categorySlug", "maker", "modelType", "serialNo", "specs", "rawText", "needsReview"],

@@ -4,8 +4,10 @@ import { listCategories } from "@/actions/machinery";
 import { ImportFlow } from "@/components/import-flow";
 
 // Extraction (vision + large tool-use output) can run well past Vercel's
-// default Server Action timeout on a real vessel spec sheet.
-export const maxDuration = 60;
+// default Server Action timeout on a real vessel spec sheet. 300s is the
+// standard ceiling on Vercel Pro (Hobby hard-caps at 60s regardless of
+// this value — extraction requires Pro for exactly this reason).
+export const maxDuration = 300;
 
 export default async function VesselImportPage({
   params,
