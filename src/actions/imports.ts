@@ -25,7 +25,7 @@ export async function runImport(vesselId: number, formData: FormData) {
   const buffer = Buffer.from(await file.arrayBuffer());
 
   const blob = await put(`imports/${vesselId}/${Date.now()}-${file.name}`, buffer, {
-    access: "public",
+    access: "private",
     contentType: file.type || "application/octet-stream",
   });
 
