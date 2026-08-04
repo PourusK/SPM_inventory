@@ -1,4 +1,7 @@
-import "dotenv/config";
+import { config } from "dotenv";
+
+config({ path: ".env.local" });
+
 import { db } from "@/lib/db";
 import { machineryCategories } from "@/lib/db/schema";
 import { MACHINERY_CATEGORIES } from "@/lib/taxonomy";

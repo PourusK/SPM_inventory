@@ -1,5 +1,7 @@
-import "dotenv/config";
+import { config } from "dotenv";
 import { neon } from "@neondatabase/serverless";
+
+config({ path: ".env.local" });
 
 async function main() {
   if (!process.env.DATABASE_URL) {
