@@ -3,6 +3,10 @@ import { getVessel } from "@/actions/vessels";
 import { listCategories } from "@/actions/machinery";
 import { ImportFlow } from "@/components/import-flow";
 
+// Extraction (vision + large tool-use output) can run well past Vercel's
+// default Server Action timeout on a real vessel spec sheet.
+export const maxDuration = 60;
+
 export default async function VesselImportPage({
   params,
 }: {

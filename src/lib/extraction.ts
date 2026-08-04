@@ -122,23 +122,36 @@ export async function extractMachinery(
 
   const response = await client.messages.create({
     model: EXTRACTION_MODEL,
-    max_tokens: 8000,
+    // Real vessel spec sheets run 40-60+ items with verbose raw-text fields —
+    // 8000 was cutting the JSON off mid-generation on anything but a tiny sample.
+    max_tokens: 16000,
     system: SYSTEM_PROMPT,
     tools: [toolDefinition()],
     tool_choice: { type: "tool", name: "record_machinery_items" },
     messages: [{ role: "user", content }],
   });
 
+  if (response.stop_reason === "max_tokens") {
+    throw new Error(
+      "Extraction was cut off because the document produced too much output. Try splitting the file into smaller sections and importing each separately."
+    );
+  }
+
   const toolUse = response.content.find(
     (block): block is Anthropic.ToolUseBlock => block.type === "tool_use"
   );
   if (!toolUse) {
-    throw new Error("Extraction did not return structured output");
+    throw new Error(
+      `Extraction did not return structured output (stop_reason: ${response.stop_reason})`
+    );
   }
 
   const parsed = extractionToolResultSchema.safeParse(toolUse.input);
   if (!parsed.success) {
-    throw new Error(`Extraction output failed validation: ${parsed.error.message}`);
+    const preview = JSON.stringify(toolUse.input).slice(0, 500);
+    throw new Error(
+      `Extraction output failed validation: ${parsed.error.message} | raw input preview: ${preview}`
+    );
   }
 
   return parsed.data.items;
