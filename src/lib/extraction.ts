@@ -92,7 +92,12 @@ export async function extractMachinery(
 ): Promise<ExtractedItem[]> {
   const content: Anthropic.ContentBlockParam[] = [];
 
-  if (mimeType === "application/pdf") {
+  // Some browsers and operating systems submit PDFs with an empty or generic
+  // MIME type. The file picker already filters by extension, so use the name
+  // as a fallback rather than rejecting a valid PDF after it was uploaded.
+  const isPdf = mimeType.toLowerCase().split(";", 1)[0] === "application/pdf" || /\.pdf$/i.test(fileName);
+
+  if (isPdf) {
     content.push({
       type: "document",
       source: { type: "base64", media_type: "application/pdf", data: buffer.toString("base64") },

@@ -29,6 +29,8 @@ export type DraftItem = {
   needsReview: boolean;
 };
 
+const MAX_IMPORT_SIZE = 4_000_000;
+
 export function ImportFlow({
   vesselId,
   categories,
@@ -50,6 +52,10 @@ export function ImportFlow({
     const file = fileInputRef.current?.files?.[0];
     if (!file) {
       toast.error("Choose a file first");
+      return;
+    }
+    if (file.size > MAX_IMPORT_SIZE) {
+      setError("File is too large. Upload a file smaller than 4 MB.");
       return;
     }
     setError(null);
@@ -140,6 +146,7 @@ export function ImportFlow({
               {isExtracting ? "Reading document..." : "Extract"}
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground">Maximum file size: 4 MB.</p>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </CardContent>
       </Card>
