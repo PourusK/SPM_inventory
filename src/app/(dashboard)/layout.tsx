@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { href: "/offshore", label: "Offshore" },
   { href: "/recycled", label: "Recycled" },
   { href: "/matches", label: "Matches" },
+  { href: "/platform", label: "How it works" },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
