@@ -11,6 +11,8 @@ import { extractMachinery, type ExtractedItem } from "@/lib/extraction";
 import { rematchAfterVesselChange, runMatchingForVessel } from "@/lib/matching";
 import { CATEGORY_SLUGS } from "@/lib/taxonomy";
 
+const MAX_IMPORT_SIZE = 4_000_000;
+
 export async function runImport(vesselId: number, formData: FormData) {
   const session = await requireSession();
 
@@ -20,6 +22,9 @@ export async function runImport(vesselId: number, formData: FormData) {
   }
   if (file.size === 0) {
     throw new Error("File is empty");
+  }
+  if (file.size > MAX_IMPORT_SIZE) {
+    throw new Error("File is too large. Upload a file smaller than 4 MB.");
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
